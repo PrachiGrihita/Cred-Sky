@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SKY CRED — Check the sky's credit score before you step out.</title>
+  <meta name="description" content="SKY CRED turns live weather into a simple, human answer: is today a good day to step outside?" />
+  <meta name="theme-color" content="#05070f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236ee7ff'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='%230a0f1e'/%3E%3Cpath d='M9 20.5a4 4 0 0 1 .3-8 5.5 5.5 0 0 1 10.5 1.2A3.4 3.4 0 0 1 23 20.4H9z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#city-input">Skip to city search</a>
+
+  <div class="aurora" aria-hidden="true">
+    <span class="aurora__blob aurora__blob--one"></span>
+    <span class="aurora__blob aurora__blob--two"></span>
+    <span class="aurora__blob aurora__blob--three"></span>
+    <span class="aurora__grain"></span>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="SKY CRED home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
+            <defs>
+              <linearGradient id="brandGrad" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6ee7ff" />
+                <stop offset="1" stop-color="#a78bfa" />
+              </linearGradient>
+            </defs>
+            <path d="M9.2 23.4a4.6 4.6 0 0 1 .3-9.2 6.3 6.3 0 0 1 12 1.4 3.9 3.9 0 0 1-.6 7.8H9.2Z" fill="url(#brandGrad)" opacity=".95" />
+            <path d="m12.4 19.2 2.3 2.3 5-5.3" stroke="#05070f" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="brand__text">
+          <span class="brand__name">SKY CRED</span>
+          <span class="brand__sub">Weather credit bureau</span>
+        </span>
+      </a>
+
+      <p class="tagline">Check the sky&rsquo;s credit score before you step out.</p>
+    </header>
+
+    <section class="searchbar" aria-label="City search">
+      <form class="search" id="search-form" role="search" novalidate>
+        <label class="sr-only" for="city-input">City name</label>
+        <span class="search__glass" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16 16 4.2 4.2" />
+          </svg>
+        </span>
+        <input
+          id="city-input"
+          class="search__input"
+          name="city"
+          type="text"
+          inputmode="search"
+          placeholder="Search any city…"
+          autocomplete="off"
+          autocapitalize="words"
+          spellcheck="false"
+          aria-describedby="search-error"
+        />
+        <button class="btn btn--primary" id="search-btn" type="submit">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          <span class="btn__label">Check sky</span>
+        </button>
+      </form>
+      <p class="field-error" id="search-error" role="alert" hidden></p>
+
+      <div class="chips" id="popular-cities" role="group" aria-label="Popular cities"></div>
+    </section>
+
+    <p class="visually-hidden" id="status-region" role="status" aria-live="polite"></p>
+
+    <section class="card alert" id="error-panel" role="alert" hidden>
+      <span class="alert__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 8v5" />
+          <circle cx="12" cy="16.4" r=".9" fill="currentColor" stroke="none" />
+          <path d="M10.3 3.9 2.9 17.2A2 2 0 0 0 4.6 20h14.8a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+        </svg>
+      </span>
+      <div class="alert__body">
+        <h2 class="alert__title" id="error-title">Something went wrong</h2>
+        <p class="alert__text" id="error-text">We couldn&rsquo;t load the weather for this city.</p>
+      </div>
+      <button class="btn btn--ghost" id="retry-btn" type="button" hidden>Try again</button>
+    </section>
+
+    <main class="dashboard" id="dashboard" aria-busy="true">
+      <div class="skeleton" id="skeleton" aria-hidden="true">
+        <div class="skeleton__hero card">
+          <div class="skeleton__line skeleton__line--sm"></div>
+          <div class="skeleton__line skeleton__line--xl"></div>
+          <div class="skeleton__line skeleton__line--md"></div>
+          <div class="skeleton__ring"></div>
+        </div>
+        <div class="skeleton__metrics">
+          <div class="skeleton__metric card"></div>
+          <div class="skeleton__metric card"></div>
+          <div class="skeleton__metric card"></div>
+        </div>
+      </div>
+
+      <div class="content" id="content" hidden>
+        <section class="card hero" id="hero" data-tone="great">
+          <div class="hero__main">
+            <div class="hero__top">
+              <div class="place">
+                <span class="place__pin" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" />
+                    <circle cx="12" cy="10" r="2.6" />
+                  </svg>
+                </span>
+                <div class="place__text">
+                  <h1 class="place__city" id="city-name">—</h1>
+                  <p class="place__region" id="city-region">—</p>
+                </div>
+              </div>
+
+              <div class="stamps">
+                <span class="stamp" id="local-time">—</span>
+                <span class="stamp stamp--soft" id="local-date">—</span>
+              </div>
+            </div>
+
+            <div class="reading">
+              <img class="reading__icon" id="condition-icon" src="" alt="" width="112" height="112" />
+              <div class="reading__body">
+                <p class="temp">
+                  <span class="temp__value" id="temp-c">—</span><span class="temp__unit">°C</span>
+                </p>
+                <p class="reading__line">
+                  <span class="condition" id="condition-text">—</span>
+                  <span class="condition__alt" id="temp-f">—</span>
+                </p>
+                <p class="temp__feels" id="feels-like">Feels like —</p>
+              </div>
+            </div>
+          </div>
+
+          <aside class="hero__score" aria-label="Sky credit score">
+            <div class="score">
+              <svg class="score__ring" viewBox="0 0 132 132" aria-hidden="true">
+                <circle class="score__track" cx="66" cy="66" r="58" />
+                <circle class="score__arc" id="score-arc" cx="66" cy="66" r="58" />
+              </svg>
+              <div class="score__readout">
+                <span class="score__label">Sky cred</span>
+                <span class="score__number" id="score-number">—</span>
+                <span class="score__grade" id="score-grade">—</span>
+              </div>
+            </div>
+            <p class="score__caption" id="score-caption">—</p>
+          </aside>
+        </section>
+
+        <section class="metrics" aria-label="Primary weather metrics">
+          <article class="card metric">
+            <div class="metric__top">
+              <span class="metric__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3.5s6 6.6 6 10.6a6 6 0 0 1-12 0C6 10.1 12 3.5 12 3.5Z" />
+                </svg>
+              </span>
+              <span class="metric__label">Humidity</span>
+            </div>
+            <p class="metric__value"><span id="humidity-value">—</span><span class="metric__unit">%</span></p>
+            <p class="metric__note" id="humidity-note">—</p>
+          </article>
+
+          <article class="card metric">
+            <div class="metric__top">
+              <span class="metric__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 8.5h11a3 3 0 1 0-3-3" />
+                  <path d="M3 12.5h15" />
+                  <path d="M3 16.5h9a3 3 0 1 1-3 3" />
+                </svg>
+              </span>
+              <span class="metric__label">Wind</span>
+            </div>
+            <p class="metric__value"><span id="wind-value">—</span><span class="metric__unit">km/h</span></p>
+            <p class="metric__note" id="wind-note">—</p>
+          </article>
+
+          <article class="card metric">
+            <div class="metric__top">
+              <span class="metric__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2.6v2.2M12 19.2v2.2M4.4 12H2.2M21.8 12h-2.2M6.6 6.6 5 5M19 19l-1.6-1.6M17.4 6.6 19 5M5 19l1.6-1.6" />
+                </svg>
+              </span>
+              <span class="metric__label">UV index</span>
+            </div>
+            <p class="metric__value"><span id="uv-value">—</span><span class="metric__unit">idx</span></p>
+            <p class="metric__note" id="uv-note">—</p>
+          </article>
+        </section>
+
+        <div class="split">
+          <section class="card insight" id="insight" data-tone="great">
+            <p class="eyebrow">Weather personality</p>
+            <div class="insight__head">
+              <span class="insight__icon" id="personality-icon" aria-hidden="true"></span>
+              <div class="insight__copy">
+                <h2 class="insight__title" id="personality-title">—</h2>
+                <p class="insight__desc" id="personality-desc">—</p>
+              </div>
+            </div>
+            <p class="insight__basis" id="personality-basis">—</p>
+            <p class="disclaimer">Application-generated interpretation — not a real credit score.</p>
+          </section>
+
+          <section class="card details" aria-label="Secondary weather details">
+            <p class="eyebrow">Conditions in detail</p>
+            <dl class="details__grid">
+              <div class="detail">
+                <dt>Cloud cover</dt>
+                <dd id="cloud-value">—</dd>
+              </div>
+              <div class="detail">
+                <dt>Visibility</dt>
+                <dd id="visibility-value">—</dd>
+              </div>
+              <div class="detail">
+                <dt>Pressure</dt>
+                <dd id="pressure-value">—</dd>
+              </div>
+              <div class="detail">
+                <dt>Wind</dt>
+                <dd id="wind-detail">—</dd>
+              </div>
+              <div class="detail">
+                <dt>Temperature</dt>
+                <dd id="temp-f-detail">—</dd>
+              </div>
+              <div class="detail">
+                <dt>Last updated</dt>
+                <dd id="updated-value">—</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <section class="card devtools" aria-label="API response viewer">
+      <div class="devtools__head">
+        <div class="devtools__titles">
+          <p class="eyebrow">Developer tools</p>
+          <h2 class="devtools__title">WeatherAPI response</h2>
+          <p class="devtools__meta" id="json-meta">No response yet</p>
+        </div>
+        <div class="devtools__actions">
+          <div class="tabs" role="tablist" aria-label="JSON view">
+            <button class="tab is-active" id="tab-formatted" role="tab" aria-selected="true" aria-controls="json-output" data-view="formatted" type="button">Formatted</button>
+            <button class="tab" id="tab-raw" role="tab" aria-selected="false" aria-controls="json-output" data-view="raw" type="button">Raw</button>
+          </div>
+          <button class="btn btn--tiny" id="copy-btn" type="button" disabled>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2.4" />
+              <path d="M15 5.4A2.4 2.4 0 0 0 12.6 3H6.4A2.4 2.4 0 0 0 4 5.4v6.2A2.4 2.4 0 0 0 6.4 14" />
+            </svg>
+            <span id="copy-label">Copy</span>
+          </button>
+        </div>
+      </div>
+      <pre class="code" id="json-output" tabindex="0" aria-live="off">Waiting for the first successful response…</pre>
+    </section>
+
+    <footer class="footer">
+      <p>Live data from <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI.com</a> · Updated on every search.</p>
+      <p class="footer__note">SKY CRED is a design concept. The &ldquo;score&rdquo; is a weather interpretation, not financial advice.</p>
+    </footer>
+  </div>
+
+  <script src="./js/env.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
