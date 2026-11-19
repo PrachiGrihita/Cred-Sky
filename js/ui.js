@@ -6,7 +6,6 @@
 import { humidityNote, uvNote, windNote } from "./cred.js";
 
 const ARC_LENGTH = 2 * Math.PI * 58; // r=58 in the score ring
-const THEME_COLOR = "#0a0f1e";
 
 const ICONS = {
   snow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v19M3.8 7.2l16.4 9.6M20.2 7.2 3.8 16.8"/><path d="M9.6 4.6 12 7l2.4-2.4M9.6 19.4 12 17l2.4 2.4M4.2 10.9 6.8 9.6 5.9 6.9M19.8 13.1l-2.6 1.3.9 2.7M19.8 10.9 17.2 9.6l.9-2.7M4.2 13.1l2.6 1.3-.9 2.7"/></svg>`,
@@ -222,7 +221,7 @@ export function announce(message) {
 
 /* --------------------------------------------------------------- rendering */
 
-export function renderWeather(data, interpretation, { receivedAt } = {}) {
+export function renderWeather(data, interpretation) {
   const location = data.location || {};
   const current = data.current || {};
   const { name, region } = placeName(location);
@@ -283,9 +282,6 @@ export function renderWeather(data, interpretation, { receivedAt } = {}) {
 
   document.title = `${round(current.temp_c)}°C · ${name} — SKY CRED`;
   els.copy.disabled = false;
-  if (receivedAt) {
-    els.jsonMeta.dataset.receivedAt = receivedAt.toISOString();
-  }
 }
 
 /* ------------------------------------------------------------ JSON viewer */
@@ -364,4 +360,4 @@ export const jsonViewer = (() => {
   return { set, select, copy, get view() { return view; } };
 })();
 
-export { els, THEME_COLOR };
+export { els };

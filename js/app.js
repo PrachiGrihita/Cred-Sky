@@ -43,7 +43,6 @@ const state = {
   requestId: 0,
   controller: null,
   hasData: false,
-  pending: false,
 };
 
 function normalize(value) {
@@ -74,7 +73,6 @@ async function loadCity(city, { fromChip = false } = {}) {
   const controller = new AbortController();
   state.controller = controller;
   const requestId = ++state.requestId;
-  state.pending = true;
 
   setLoading(state.hasData ? "refresh" : "initial");
   hideError();
@@ -90,11 +88,10 @@ async function loadCity(city, { fromChip = false } = {}) {
     if (requestId !== state.requestId) return;
 
     const interpretation = interpretWeather(data);
-    renderWeather(data, interpretation, { receivedAt });
+    renderWeather(data, interpretation);
     jsonViewer.set(data, raw, receivedAt);
 
     state.hasData = true;
-    state.pending = false;
     setQuery(data.location?.name || query);
     showDashboard();
     announce(
@@ -104,7 +101,6 @@ async function loadCity(city, { fromChip = false } = {}) {
     if (requestId !== state.requestId) return; // superseded
     if (error && error.name === "AbortError") return; // cancelled deliberately
 
-    state.pending = false;
     const normalized =
       error instanceof WeatherApiError
         ? error
